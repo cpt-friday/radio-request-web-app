@@ -1,9 +1,69 @@
+*{
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 5px;
+}
+
 body{
   text-align: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(to right, #03fc45, #03e3fc);
 }
 
-.MainMenu{
-  background-color: white; 
+div.SongRequestField{
+  background-color: white;
+  padding: 10px 10px 10px 10px;
+  border: 3px solid black;
+  margin: 20px 20px 20px 20px
+}
+
+div.SongRequestField h2{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+button{
+  background: linear-gradient(to right, #57ff84, #56e8f8);
+  padding: 5px 5px 5px 5px;
+  border: 3px solid black;
+  margin: 5px 5px 5px 5px;
+}
+button:hover{
+  background: linear-gradient(to right, #9dffb7, #a5f1fa);
+  cursor: pointer;
+}
+button:active{
+  background-color: white;
+}
+
+ol.SongListField{
+  padding: 10px 10px 10px 30px;
+  border: 3px double gray;
+  margin: 20px 20px 20px 20px;
+  text-align: left;
+  font-size: 120%;
+}
+
+form{
+  border: 3px solid black;
+  margin: 10px 20px 10px 20px;
+  padding: 10px 20px 10px 20px;
+  grid-template-columns: 100px 100px 100px;
+  grid-gap: 10px;
+  justify-items: center;
+}
+
+form input{
+  width: 500px;
+  height: 30px;
+  margin: 10px 10px 10px 10px;
+  padding: 5px 5px 5px 5px;
+  border: 2px solid gray;
+  display: grid;
+  font-size: 100%;
+}
+
+span.deleteButton{
+  color: red;
+  font-weight: bold;
+  margin-left: 10px;
+  cursor: pointer;
 }

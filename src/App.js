@@ -30,16 +30,17 @@ function SongList({reqs, setReqs}){
     setEdit((prev) => !prev);
   }
   return (
-    <div className='SongListField'>
+    <div className='SongRequestField'>
       <h2>List of Song Requests</h2>
       <button onClick={handleAdd}>Add Request</button>
-      { add && (<SongInput setReqs={setReqs} setVisible={setAdd}/>)}
       <button onClick={handleEdit}>Edit Request</button>
-      <ol>
+      { add && (<SongInput setReqs={setReqs} setVisible={setAdd}/>)}
+      <ol className='SongListField'>
         {reqs.map((req) => (
           <div className='SongField' key={req.id}>
-            <li>{displayString(req)}</li>
-
+            <li>{displayString(req)}
+            <span className="deleteButton" role="button">X</span>
+            </li>
           </div>
         ))}
       </ol>
