@@ -38,7 +38,6 @@ ol.SongListField{
   padding: 10px 10px 10px 30px;
   border: 3px double gray;
   margin: 20px 20px 20px 20px;
-  text-align: left;
   font-size: 120%;
 }
 
@@ -55,6 +54,8 @@ form input{
   width: 500px;
   height: 30px;
   margin: 10px 10px 10px 10px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 5px 5px 5px 5px;
   border: 2px solid gray;
   display: grid;
@@ -66,4 +67,45 @@ span.deleteButton{
   font-weight: bold;
   margin-left: 10px;
   cursor: pointer;
+}
+
+.RequestTable{
+  border: 3px double gray;
+  padding: 5px;
+  table-layout: auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: left;
+  font-size: 100%;
+  width: 75%;
+}
+
+.RequestTable th{
+  font-style: italic;
+}
+
+.RequestTable th, .RequestTable td{
+  padding: 5px;
+}
+
+div.TweetMenu{
+  background-color: white;
+  padding: 10px 10px 30px 10px;
+  border: 3px solid black;
+  margin: 20px;
+}
+
+span.TweetDisplay{
+  padding: 20px;
+  border: 3px double grey;
+  margin: 20px;
+}
+
+input#input_json{
+  padding: 5px;
+  border: 3px solid black;
+  margin: 5px;
+  background: linear-gradient(to right, #03fc45, #03e3fc);
 }
