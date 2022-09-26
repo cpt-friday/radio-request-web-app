@@ -1,0 +1,19 @@
+{
+    "workbench.colorCustomizations": {
+        //moonside theme
+        
+        //editor window settings
+        "editor.background": "#000000",
+        "editor.foreground": "#ffffff",
+        "editorLineNumber.activeForeground": "#f8f800",
+        "editorLineNumber.foreground": "#f8f8007f",
+        "editorCursor.background": "#ffffff7f",
+        "editorCursor.foreground": "#ffffff",
+        "editor.selectionBackground": "#f8f8005f",
+        "editor.inactiveSelectionBackground": "#9800f85f",
+        "editor.selectionHighlightBackground": "#6464645f",
+        "editor.tokenColorCustomizations": {
+            "comments": "#f8f8f8"
+        }
+    }
+}

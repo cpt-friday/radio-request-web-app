@@ -92,6 +92,7 @@ function SongList({reqs, setReqs, fileRef}){
       <h2>List of Song Requests</h2>
       <button onClick={handleAdd}>Add Request</button>
       <button onClick={handleEdit}>Edit Request</button>
+      <button>Clear Requests</button>
       { add && (<SongInput setReqs={setReqs} setVisible={setAdd}/>)}
       {reqs.length === 0 && <p>No requests! Add a song to get started</p>}
       <table className='RequestTable'>
