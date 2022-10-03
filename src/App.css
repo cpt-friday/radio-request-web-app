@@ -97,15 +97,20 @@ div.TweetMenu{
   margin: 20px;
 }
 
-span.TweetDisplay{
+div.TweetDisplay{
   padding: 20px;
   border: 3px double grey;
+  width: fit-content;
   margin: 20px;
+  word-break: normal;
+  display: inline-block;
+  text-align: left;
 }
 
 input#input_json{
   padding: 5px;
   border: 3px solid black;
   margin: 5px;
+  width: fit-content;
   background: linear-gradient(to right, #03fc45, #03e3fc);
 }

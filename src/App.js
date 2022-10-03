@@ -1,16 +1,13 @@
 import './App.css';
 import React from 'react';
 
-const config = require('./config');
-const twitter = require('twitter-lite');
-const client = new twitter(config);
 
 const reqEmpty = (req) => {
   return req.name.length === 0 || req.artist.length === 0 || req.req.length === 0;
 }
 const dateString = new Date().toISOString().slice(5, 10);
 const displayString = (req, index) => {
-  return `REQUEST #${index}\n"${req.name}" by ${req.artist}\nRequested by ${req.req}\n\nListen here at thecore.fm`;
+  return `REQUEST #${index+1}\n"${req.name}" by ${req.artist}\nRequested by ${req.req}\n\nListen here at thecore.fm`;
 }
 
 let rBlock = [];
@@ -31,6 +28,10 @@ const downloadFile = ({data, fileName, fileType}) => {
 
 const exportToJson = e => {
   e.preventDefault();
+  if(rBlock.length === 0){
+    alert("No request block to be exported");
+    return;
+  }
   downloadFile({
     data: JSON.stringify(rBlock),
     fileName: `${dateString}.json`,
@@ -39,60 +40,79 @@ const exportToJson = e => {
 };
 
 export default function App() {
+  const [api, setApi] = React.useState({apiResponse: ""});
   const [reqs, setReqs] = React.useState([]);
   const fileRef = React.useRef();
+  function callAPI(){
+    fetch("http://localhost:9000/testAPI")
+      .then(res => res.text())
+      .then(res => setApi({apiResponse: res}));
+  }
+  React.useEffect(() => {
+    callAPI();
+  }, []);
   return (
     <div className='MainMenu'>
       <h1>Radio Show Menu</h1>
       <SongList reqs={reqs} setReqs={setReqs} fileRef={fileRef}/>
       <TweetMenu />
+      <p className='APITest'>{api.apiResponse}</p>
     </div>
   );
 }
 
 function SongList({reqs, setReqs, fileRef}){
   const [add, setAdd] = React.useState(false);
-  const [edit, setEdit] = React.useState(false);
+  const [load, setLoad] = React.useState(false);
   function handleAdd(){
     setAdd((prev) => !prev);
-  }
-  function handleEdit(){
-    setEdit((prev) => !prev);
   }
   async function handleFile(e){
     if(e.target.files && e.target.files[0]){
       const inJSON = e.target.files[0];
-      console.log(inJSON);
       const reader = new FileReader();
       reader.readAsText(inJSON);
       reader.onload = () => {
         let inText = reader.result;
         let inBlock = JSON.parse(inText);
         inBlock.forEach(req => {
-          console.log(req);
-          rBlock.push(req);
+          rBlock.push({
+            name: req.name,
+            artist: req.artist,
+            req: (req.req) ? req.req : req.requester
+          })
           const inReq = {
             id: Math.random(),
             name: req.name,
             artist: req.artist,
-            req: req.req
+            req: (req.req) ? req.req : req.requester
           };
           setReqs((prev) => {
             return prev.concat(inReq);
           })
         })
+        setLoad((prev) => !prev);
       };
       reader.onerror = () => {
         console.log(reader.error);
       }
     }
   }
+  function handleClear(){
+    let conf = window.confirm("Are you sure you want to clear the request block?");
+    if(conf){
+      rBlock = [];
+      setReqs((prev) => {
+        return prev = [];
+      });
+    }
+    else return;
+  }
   return (
     <div className='SongRequestField'>
       <h2>List of Song Requests</h2>
       <button onClick={handleAdd}>Add Request</button>
-      <button onClick={handleEdit}>Edit Request</button>
-      <button>Clear Requests</button>
+      <button onClick={handleClear}>Clear Requests</button>
       { add && (<SongInput setReqs={setReqs} setVisible={setAdd}/>)}
       {reqs.length === 0 && <p>No requests! Add a song to get started</p>}
       <table className='RequestTable'>
@@ -122,7 +142,13 @@ function SongList({reqs, setReqs, fileRef}){
         </tbody>
       </table>
       <button onClick={exportToJson}>Export to JSON</button>
-      <input type="file" id="input_json" ref={fileRef} onChange={handleFile}/>
+      { (load) ?
+      (<input type="file" id="input_json" ref={fileRef} onChange={handleFile}/>)
+        :
+      (<button onClick={() => {
+        setLoad((prev) => !prev);
+      }}>Load from JSON</button>)
+      }
     </div>
   );
 }
@@ -172,29 +198,6 @@ function SongInput({setReqs, setVisible}){
   )
 }
 
-// function SongEdit({req, setVisible}){
-//   const inputName = React.useRef();
-//   const inputArtist = React.useRef();
-//   const inputReq = React.useRef();
-//   function handleEdit(event){
-//     event.preventDefault();
-//     const elems = event.target.elements;
-//     req.name = elems.editName.value;
-//     req.artist = elems.editArtist.value;
-//     req.req = elems.editReq.value;
-//     if(!reqEmpty(req)) setVisible();
-//   }
-//   const handleCancel = () => setVisible();
-//   return (
-//     <form onSubmit={handleEdit}>
-//       <input name="editName" defaultValue={req.name} ref={inputName} />
-//       <input name="editArtist" defaultValue={req.artist} ref={inputArtist} />
-//       <input name="editReq" defaultValue={req.req} ref={inputReq}/>
-//       <button type="submit">Submit Edits</button>
-//       <button onSubmit={handleCancel}>Cancel</button>
-//     </form>
-//   )
-// }
 
 function DeleteSong({req, setReqs}){
   function handleDelete(){
@@ -216,25 +219,45 @@ function DeleteSong({req, setReqs}){
 //Tweet Menu
 
 function TweetMenu(){
+  const displayRef = React.useRef();
   let loaded = false;
   let index = 0;
-  function handlePrep(){
+  function handlePrep(index){
     if(rBlock.length === 0){
       alert("No Requests in block");
       return;
     }
+    if(index >= rBlock.length){
+      displayRef.current.innerHTML = "No Tweets Loaded Yet";
+      loaded = false;
+      return;
+    }
+    displayRef.current.innerHTML = displayString(rBlock[index], index).replace(/\n/g, '<br />');
+    loaded = true;
   }
   function handleLaunch(){
     if(!loaded){
       alert("Tweets Not Prepared");
       return;
     }
+    else{
+      const msg = {text: displayString(rBlock[index], index)};
+      fetch("http://localhost:9000/tweetout", {method: 'post', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(msg)})
+        .then((res) => res.text())
+        .then((res) => {
+          console.log(res);
+        });
+      index++;
+      handlePrep(index);
+    }
   }
   return (
     <div className='TweetMenu'>
       <h2>Tweet Station</h2>
-      <button onClick={handlePrep}>Prepare Tweets</button>
-      <span className='TweetDisplay'>No Tweets Loaded Yet</span>
+      <button onClick={() => handlePrep(index)}>Prepare Tweets</button>
+      <div className='TweetDisplay'>
+        <span ref={displayRef}>No Tweets Loaded Yet</span>
+      </div>
       <button onClick={handleLaunch}>Launch Tweet</button>
     </div>
   )
