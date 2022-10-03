@@ -40,23 +40,13 @@ const exportToJson = e => {
 };
 
 export default function App() {
-  const [api, setApi] = React.useState({apiResponse: ""});
   const [reqs, setReqs] = React.useState([]);
   const fileRef = React.useRef();
-  function callAPI(){
-    fetch("http://localhost:9000/testAPI")
-      .then(res => res.text())
-      .then(res => setApi({apiResponse: res}));
-  }
-  React.useEffect(() => {
-    callAPI();
-  }, []);
   return (
     <div className='MainMenu'>
       <h1>Radio Show Menu</h1>
       <SongList reqs={reqs} setReqs={setReqs} fileRef={fileRef}/>
       <TweetMenu />
-      <p className='APITest'>{api.apiResponse}</p>
     </div>
   );
 }
@@ -102,9 +92,7 @@ function SongList({reqs, setReqs, fileRef}){
     let conf = window.confirm("Are you sure you want to clear the request block?");
     if(conf){
       rBlock = [];
-      setReqs((prev) => {
-        return prev = [];
-      });
+      setReqs((prev) => []);
     }
     else return;
   }
@@ -242,11 +230,15 @@ function TweetMenu(){
     }
     else{
       const msg = {text: displayString(rBlock[index], index)};
-      fetch("http://localhost:9000/tweetout", {method: 'post', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(msg)})
-        .then((res) => res.text())
-        .then((res) => {
-          console.log(res);
-        });
+      fetch("/tweetout", {
+        method: 'post',
+        mode: 'cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(msg)
+      }).then((res) => res.text())
+      .then((res) => {
+        console.log(res);
+      });
       index++;
       handlePrep(index);
     }
