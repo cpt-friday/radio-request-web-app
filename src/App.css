@@ -101,6 +101,7 @@ div.TweetDisplay{
   padding: 20px;
   border: 3px double grey;
   width: fit-content;
+  height: fit-content;
   margin: 20px;
   word-break: normal;
   display: inline-block;
@@ -113,4 +114,11 @@ input#input_json{
   margin: 5px;
   width: fit-content;
   background: linear-gradient(to right, #03fc45, #03e3fc);
+}
+
+div.APIResponse span{
+  width: fit-content;
+  border: 3px dotted gray;
+  padding: 5px;
+  margin: 5px;
 }

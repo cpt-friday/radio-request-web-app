@@ -208,6 +208,7 @@ function DeleteSong({req, setReqs}){
 
 function TweetMenu(){
   const displayRef = React.useRef();
+  const apiRef = React.useRef();
   let loaded = false;
   let index = 0;
   function handlePrep(index){
@@ -216,7 +217,8 @@ function TweetMenu(){
       return;
     }
     if(index >= rBlock.length){
-      displayRef.current.innerHTML = "No Tweets Loaded Yet";
+      displayRef.current.innerHTML = "All requests launched!";
+      if(index > rBlock.length) apiRef.current.innerHTML = "No more tweets to Launch";
       loaded = false;
       return;
     }
@@ -235,9 +237,15 @@ function TweetMenu(){
         mode: 'cors',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(msg)
-      }).then((res) => res.text())
-      .then((res) => {
-        console.log(res);
+      }).then((res) => res.status)
+      .then((status) => {
+        switch(status){
+          case 200:
+            apiRef.current.innerHTML = `Tweet #${index} Launched Successfully`;
+            break;
+          default:
+            apiRef.current.innerHTML = `Tweet #${index} Failed to Launch`
+        }
       });
       index++;
       handlePrep(index);
@@ -251,6 +259,9 @@ function TweetMenu(){
         <span ref={displayRef}>No Tweets Loaded Yet</span>
       </div>
       <button onClick={handleLaunch}>Launch Tweet</button>
+      <div className='APIResponse'>
+        <span ref={apiRef}>Tweets not launched</span>
+      </div>
     </div>
   )
 }

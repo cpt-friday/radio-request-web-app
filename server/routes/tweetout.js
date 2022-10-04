@@ -17,5 +17,4 @@ router.post('/', (req, res) => {
     res.send(displaytext);
 });
 
-
 module.exports = router;
