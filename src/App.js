@@ -10,6 +10,8 @@ const displayString = (req, index) => {
   return `REQUEST #${index+1}\n"${req.name}" by ${req.artist}\nRequested by ${req.req}\n\nListen here at thecore.fm`;
 }
 
+const suffix = "\n\nListen here at the core.fm";
+
 let rBlock = [];
 
 const downloadFile = ({data, fileName, fileType}) => {
