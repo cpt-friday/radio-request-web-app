@@ -1,9 +1,17 @@
-REQUEST APP
+# Radio Request Website
+This is a web app and server package designed to add, save, and load song requests as well as tweet them out using the Twitter API
 
-This is an app that contains both a local web app and a server to run it
-It allows people to enter in song requests for a show and tweet them out using the twitter API and the integrated server
+## Requirements
+- NodeJS
+- Terminal Application of some kind (Terminal or PowerShell)
+- [Twitter API Tokens](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
 
-To run it, open /client and run "npm start"
+## Setup
+- Open desired folder location in terminal
+- Run `git clone https://github.com/cpt-friday/radio-request-web-app.git`
+- Open server/config.js in a code editor
+- Enter your API tokens in place of the placeholders
 
-Either enter in songs individually or import a block of requests from JSON file.
-Also allows downloading a request block as JSON file
+## Using the app
+- Open local repo folder
+- Run `npm start`
