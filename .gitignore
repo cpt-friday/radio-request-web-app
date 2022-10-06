@@ -24,3 +24,5 @@ yarn-error.log*
 
 #already has README
 README.md
+
+/server/config.js
