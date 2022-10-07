@@ -69,7 +69,7 @@ span.deleteButton{
   cursor: pointer;
 }
 
-.RequestTable{
+table {
   border: 3px double gray;
   padding: 5px;
   table-layout: auto;
@@ -82,30 +82,20 @@ span.deleteButton{
   width: 75%;
 }
 
-.RequestTable th{
+table th{
   font-style: italic;
 }
 
-.RequestTable th, .RequestTable td{
+table th, table td{
   padding: 5px;
 }
+
 
 div.TweetMenu{
   background-color: white;
   padding: 10px 10px 30px 10px;
   border: 3px solid black;
   margin: 20px;
-}
-
-div.TweetDisplay{
-  padding: 20px;
-  border: 3px double grey;
-  width: fit-content;
-  height: fit-content;
-  margin: 20px;
-  word-break: normal;
-  display: inline-block;
-  text-align: left;
 }
 
 input#input_json{
@@ -116,9 +106,27 @@ input#input_json{
   background: linear-gradient(to right, #03fc45, #03e3fc);
 }
 
-div.APIResponse span{
+div.Displays{
+  margin: 20px;
+  margin-bottom: 5px;
+}
+
+div.Displays div{
+  margin: 10px;
+  padding: 15px;
+}
+
+div.Displays div.TweetDisplay{
+  border: 3px double gray;
+  padding: 15px;width: fit-content;
+  height: fit-content;
+  word-break: normal;
+  display: inline-block;
+  text-align: left;
+}
+
+div.Displays div.APIDisplay span{
   width: fit-content;
+  padding: 2px;
   border: 3px dotted gray;
-  padding: 5px;
-  margin: 5px;
 }

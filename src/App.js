@@ -6,13 +6,12 @@ const reqEmpty = (req) => {
   return req.name.length === 0 || req.artist.length === 0 || req.req.length === 0;
 }
 const dateString = new Date().toISOString().slice(5, 10);
-const displayString = (req, index) => {
-  return `REQUEST #${index+1}\n"${req.name}" by ${req.artist}\nRequested by ${req.req}\n\nListen here at thecore.fm`;
-}
 
-const suffix = "\n\nListen here at the core.fm";
 
 let rBlock = [];
+let sBlock = [];
+let msg = "";
+let index = 0;
 
 const downloadFile = ({data, fileName, fileType}) => {
   const blob = new Blob([data], {type: fileType});
@@ -28,37 +27,239 @@ const downloadFile = ({data, fileName, fileType}) => {
   a.remove();
 };
 
-const exportToJson = e => {
-  e.preventDefault();
-  if(rBlock.length === 0){
-    alert("No request block to be exported");
-    return;
-  }
-  downloadFile({
-    data: JSON.stringify(rBlock),
-    fileName: `${dateString}.json`,
-    fileType: 'text/json'
-  })
-};
-
 export default function App() {
   const [reqs, setReqs] = React.useState([]);
   const fileRef = React.useRef();
   return (
     <div className='MainMenu'>
       <h1>Radio Show Menu</h1>
+      <TweetMenu reqs={reqs} setReqs={setReqs} />
       <SongList reqs={reqs} setReqs={setReqs} fileRef={fileRef}/>
-      <TweetMenu />
     </div>
   );
+}
+
+function TweetMenu({reqs, setReqs}){
+  const [tweetStrings, setStrings] = React.useState([]);
+  const [edit, setEdit] = React.useState(false);
+  const [load, setLoad] = React.useState(false);
+  const [table, setTable] = React.useState(false);
+  const [prep, setPrep] = React.useState(false);
+  const [meta, setMeta] = React.useState(true);
+  const [introP, setIntroP] = React.useState(false);
+  const [calloutP, setCalloutP] = React.useState(false);
+  const [cutoffP, setCutoffP] = React.useState(false);
+  const [reqP, setReqP] = React.useState(false);
+  const displayRef = React.useRef();
+  const apiRef = React.useRef();
+  const handleEdit = () => {setEdit((prev) => !prev);};
+  const metaTweetBuilder = (body, suffix) => `${body}\n${suffix}`;
+  const reqTweetBuilder = (req, index, suffix) => `REQUEST #${index}\n"${req.name}" by ${req.artist}\nRequested by ${req.req}\n${suffix}`; 
+  const exportStrings = () => {
+    if(tweetStrings.length === 0){
+      alert("No tweet strings to export");
+      return;
+    }
+    downloadFile({
+      data: JSON.stringify(tweetStrings),
+      fileName: "strings.json",
+      fileType: 'text/json'
+    })
+  };
+  async function handleFile(e){
+    if(e.target.files && e.target.files[0]){
+      const inJSON = e.target.files[0];
+      const reader = new FileReader();
+      reader.readAsText(inJSON);
+      reader.onload = () => {
+        let inText = reader.result;
+        let inStrings = JSON.parse(inText);
+        setLoad((prev) => !prev);
+        inStrings.forEach((string) => {
+          sBlock.push(string.replace(/\\n/, '\n'));
+          setStrings((prev) => {
+            return prev.concat(string);
+          });
+        })
+      }
+      reader.onerror = () => {
+        console.log(reader.error);
+      }
+    }
+  }
+  function handleSubmit(e){
+    e.preventDefault();
+    const elems = e.target.elements;
+    sBlock = [
+      elems.suffix.value,
+      elems.intro.value,
+      elems.callout.value,
+      elems.cutoff.value
+    ];
+    setStrings((prev) => {
+      return prev = [
+        elems.suffix.value,
+        elems.intro.value,
+        elems.callout.value,
+        elems.cutoff.value
+      ];
+    })
+    setEdit((prev) => !prev);
+  }
+  function prepMeta(sInd){
+    if(prep){
+      alert("Tweet already prepped");
+      return;
+    }
+    if(sBlock < 4){
+      alert("Meta strings not entered");
+      return;
+    }
+    if(meta === false) setMeta((prev) => !prev);
+    msg = metaTweetBuilder(sBlock[sInd], sBlock[0]);
+    displayRef.current.innerText = msg;
+    switch(sInd){
+      case 1:
+        setIntroP((prev) => !prev);
+        break;
+      case 2:
+        setCalloutP((prev) => !prev);
+        break;
+      case 3:
+        setCutoffP((prev) => !prev);
+        break;
+      default:
+        break;
+    }
+    setPrep((prev) => !prev);
+  }
+  function prepRequest(){
+    if(sBlock.length === 0){
+      alert("Tweet Strings not loaded");
+      return;
+    }
+    if(rBlock.length === 0){
+      alert("No requests in block");
+      return;
+    }
+    if(index >= rBlock.length){
+      displayRef.current.innerText = "All requests tweeted out!";
+      index = 0;
+      setPrep((prev) => !prev);
+      return;
+    }
+    if(meta === true) setMeta((prev) => !prev);
+    msg = reqTweetBuilder(rBlock[index], index+1, sBlock[0]);
+    displayRef.current.innerText = msg;
+    if(index === 0){
+      setPrep((prev) => !prev);
+      setReqP((prev) => !prev);
+    }
+  }
+  function launchTweet(text, meta){
+    const message = {text: text};
+    fetch("/tweetout", {
+      method: 'post',
+      mode: 'cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(message)
+    }).then((res) => res.status)
+    .then((status) => {
+      switch(status){
+        case 200:
+          apiRef.current.innerHTML = "Tweet Launched Successfully";
+          break;
+        default:
+          apiRef.current.innerHTML = "Tweet Failed To Launch";
+          break;
+      }
+    });
+    if(!meta){
+      const updated = reqs.map((item) => {
+        if(item.id === index){
+          const updatedItem = {
+            ...item,
+            status: !item.status,
+          };
+          return updatedItem;
+        }
+        return item;
+      });
+      setReqs(updated);
+      index++;
+      prepRequest();
+      return;
+    }
+    else {
+      setPrep((prev) => !prev);
+      displayRef.current.innerText = "No Tweets Loaded";
+    }
+  }
+  return (
+    <div className='TweetMenu'>
+      <h2>Tweet Station</h2>
+      <div className='PrepButtons'>
+        {!introP && (<button onClick={() => prepMeta(1)}>Prepare Intro</button>)}
+        {!calloutP && (<button onClick={() => prepMeta(2)}>Prepare Callout</button>)}
+        {!cutoffP && (<button onClick={() => prepMeta(3)}>Prepare Cutoff</button>)}
+        {!reqP && (<button onClick={() => {index = 0; prepRequest();}}>Prepare Requests</button>)}
+      </div>
+      <div className='Displays'>
+        <div className='TweetDisplay'>
+          <span ref={displayRef}>No Tweets Loaded</span>
+        </div>
+        <div className='APIDisplay'>
+          <span ref={apiRef}>API Is Ready</span>
+        </div>
+      </div>
+      {prep && (<button onClick={() => launchTweet(msg, meta)}>Launch Tweet</button>)}
+      <div className='MetaButtons'>
+        <button onClick={handleEdit}>Edit Tweet Strings</button>
+        {tweetStrings.length !== 0 && (<button onClick={() => {setTable((prev) => !prev)}}>View Tweet Strings</button>)}
+        <button onClick={exportStrings}>Export Tweet Strings to JSON</button>
+        { tweetStrings.length === 0 && (
+          (load) ?
+          (<input type='file' id='input_json' onChange={handleFile}/>)
+          : (<button onClick={() => setLoad((prev) => !prev)}>Import Tweet Strings from JSON</button>)
+        )}
+      </div>
+      {edit && (<div className='EditFields'>
+        <form onSubmit={handleSubmit}>
+          <input name="suffix" placeholder='Enter Suffix for tweets'></input>
+          <input name="intro" placeholder='Enter Intro Tweet Body'></input>
+          <input name="callout" placeholder='Enter Callout Tweet Body'></input>
+          <input name="cutoff" placeholder='Enter Cutoff Tweet Body'></input>
+          <button type='submit'>Submit</button>
+          <button>Cancel</button>
+        </form>
+      </div>)}
+      {table && (<table className='TweetStringTable'>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>String</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              tweetStrings.map((string) => {
+                return(
+                  <tr key={tweetStrings.indexOf(string)}>
+                    <td>{tweetStrings.indexOf(string)}</td>
+                    <td>{string}</td>
+                  </tr>
+                )
+              })
+            }
+          </tbody>
+        </table>)}
+    </div>
+  )
 }
 
 function SongList({reqs, setReqs, fileRef}){
   const [add, setAdd] = React.useState(false);
   const [load, setLoad] = React.useState(false);
-  function handleAdd(){
-    setAdd((prev) => !prev);
-  }
   async function handleFile(e){
     if(e.target.files && e.target.files[0]){
       const inJSON = e.target.files[0];
@@ -74,14 +275,16 @@ function SongList({reqs, setReqs, fileRef}){
             req: (req.req) ? req.req : req.requester
           })
           const inReq = {
-            id: Math.random(),
+            id: index,
             name: req.name,
             artist: req.artist,
-            req: (req.req) ? req.req : req.requester
+            req: (req.req) ? req.req : req.requester,
+            status: false
           };
           setReqs((prev) => {
             return prev.concat(inReq);
           })
+          index++;
         })
         setLoad((prev) => !prev);
       };
@@ -98,10 +301,21 @@ function SongList({reqs, setReqs, fileRef}){
     }
     else return;
   }
+  const exportBlock = () => {
+    if(rBlock.length === 0){
+      alert("No request block to be exported");
+      return;
+    }
+    downloadFile({
+      data: JSON.stringify(rBlock),
+      fileName: `${dateString}.json`,
+      fileType: 'text/json'
+    })
+  }
   return (
     <div className='SongRequestField'>
       <h2>List of Song Requests</h2>
-      <button onClick={handleAdd}>Add Request</button>
+      <button onClick={() => setAdd((prev) => !prev)}>Add Request</button>
       <button onClick={handleClear}>Clear Requests</button>
       { add && (<SongInput setReqs={setReqs} setVisible={setAdd}/>)}
       {reqs.length === 0 && <p>No requests! Add a song to get started</p>}
@@ -112,6 +326,7 @@ function SongList({reqs, setReqs, fileRef}){
             <th>Name</th>
             <th>Artist</th>
             <th>Requester</th>
+            <th>Tweeted</th>
             <th>Delete</th>
           </tr>
         </thead>
@@ -124,6 +339,7 @@ function SongList({reqs, setReqs, fileRef}){
                   <td>{req.name}</td>
                   <td>{req.artist}</td>
                   <td>{req.req}</td>
+                  <td>{req.status ? ("Yes") : ("No")}</td>
                   <td><DeleteSong req={req} setReqs={setReqs} /></td>
                 </tr>
               )
@@ -131,7 +347,7 @@ function SongList({reqs, setReqs, fileRef}){
           }
         </tbody>
       </table>
-      <button onClick={exportToJson}>Export to JSON</button>
+      <button onClick={exportBlock}>Export to JSON</button>
       { (load) ?
       (<input type="file" id="input_json" ref={fileRef} onChange={handleFile}/>)
         :
@@ -151,10 +367,11 @@ function SongInput({setReqs, setVisible}){
     event.preventDefault();
     const elems = event.target.elements;
     const req = {
-      id: Math.random(),
+      id: index,
       name: elems.addName.value,
       artist: elems.addArtist.value,
-      req: elems.addReq.value
+      req: elems.addReq.value,
+      status: false
     };
     if(!reqEmpty(req)){
       setReqs((prev) => {
@@ -203,67 +420,5 @@ function DeleteSong({req, setReqs}){
   }
   return(
     <span className='deleteButton' onClick={handleDelete} role="button">X</span>
-  )
-}
-
-//Tweet Menu
-
-function TweetMenu(){
-  const displayRef = React.useRef();
-  const apiRef = React.useRef();
-  let loaded = false;
-  let index = 0;
-  function handlePrep(index){
-    if(rBlock.length === 0){
-      alert("No Requests in block");
-      return;
-    }
-    if(index >= rBlock.length){
-      displayRef.current.innerHTML = "All requests launched!";
-      if(index > rBlock.length) apiRef.current.innerHTML = "No more tweets to Launch";
-      loaded = false;
-      return;
-    }
-    displayRef.current.innerHTML = displayString(rBlock[index], index).replace(/\n/g, '<br />');
-    loaded = true;
-  }
-  function handleLaunch(){
-    if(!loaded){
-      alert("Tweets Not Prepared");
-      return;
-    }
-    else{
-      const msg = {text: displayString(rBlock[index], index)};
-      fetch("/tweetout", {
-        method: 'post',
-        mode: 'cors',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(msg)
-      }).then((res) => res.status)
-      .then((status) => {
-        switch(status){
-          case 200:
-            apiRef.current.innerHTML = `Tweet #${index} Launched Successfully`;
-            break;
-          default:
-            apiRef.current.innerHTML = `Tweet #${index} Failed to Launch`
-        }
-      });
-      index++;
-      handlePrep(index);
-    }
-  }
-  return (
-    <div className='TweetMenu'>
-      <h2>Tweet Station</h2>
-      <button onClick={() => handlePrep(index)}>Prepare Tweets</button>
-      <div className='TweetDisplay'>
-        <span ref={displayRef}>No Tweets Loaded Yet</span>
-      </div>
-      <button onClick={handleLaunch}>Launch Tweet</button>
-      <div className='APIResponse'>
-        <span ref={apiRef}>Tweets not launched</span>
-      </div>
-    </div>
   )
 }
