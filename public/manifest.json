@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Radio App",
+  "name": "Radio Show Request App",
   "icons": [
     {
       "src": "favicon.ico",

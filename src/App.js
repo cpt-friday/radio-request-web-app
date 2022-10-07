@@ -209,7 +209,7 @@ function TweetMenu({reqs, setReqs}){
           <span ref={displayRef}>No Tweets Loaded</span>
         </div>
         <div className='APIDisplay'>
-          <span ref={apiRef}>Prep = {prep ? ("True") : ("False")}</span>
+          <span ref={apiRef}>API Is Ready</span>
         </div>
       </div>
       {prep && (<button onClick={() => launchTweet(msg, meta)}>Launch Tweet</button>)}
@@ -236,6 +236,7 @@ function TweetMenu({reqs, setReqs}){
       {table && (<table className='TweetStringTable'>
           <thead>
             <tr>
+              <th>#</th>
               <th>String</th>
             </tr>
           </thead>
@@ -244,6 +245,7 @@ function TweetMenu({reqs, setReqs}){
               tweetStrings.map((string) => {
                 return(
                   <tr key={tweetStrings.indexOf(string)}>
+                    <td>{tweetStrings.indexOf(string)}</td>
                     <td>{string}</td>
                   </tr>
                 )
