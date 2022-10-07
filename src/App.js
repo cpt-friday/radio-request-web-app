@@ -12,6 +12,7 @@ let rBlock = [];
 let sBlock = [];
 let msg = "";
 let index = 0;
+let pushed = [false, false, false, false];
 
 const downloadFile = ({data, fileName, fileType}) => {
   const blob = new Blob([data], {type: fileType});
@@ -102,7 +103,7 @@ function TweetMenu({reqs, setReqs}){
     })
     setEdit((prev) => !prev);
   }
-  function prepMeta(string){
+  function prepMeta(sInd){
     if(prep){
       alert("Tweet already prepped");
       return;
@@ -111,12 +112,13 @@ function TweetMenu({reqs, setReqs}){
       alert("Meta strings not entered");
       return;
     }
-    msg = metaTweetBuilder(string, sBlock[0]);
+    if(meta === false) setMeta((prev) => !prev);
+    msg = metaTweetBuilder(sBlock[sInd], sBlock[0]);
     displayRef.current.innerText = msg;
     setPrep((prev) => !prev);
+    pushed[sInd-1] = false;
   }
   function prepRequest(){
-    console.log(index);
     if(sBlock.length === 0){
       alert("Tweet Strings not loaded");
       return;
@@ -127,60 +129,54 @@ function TweetMenu({reqs, setReqs}){
     }
     if(index >= rBlock.length){
       displayRef.current.innerText = "All requests tweeted out!";
-      if(prep === true) setPrep((prev) => !prev);
       index = 0;
+      pushed[3] = false;
+      setPrep((prev) => !prev);
       return;
     }
+    if(meta === true) setMeta((prev) => !prev);
     msg = reqTweetBuilder(rBlock[index], index+1, sBlock[0]);
     displayRef.current.innerText = msg;
-    if(prep === false) setPrep((prev) => !prev);
-    if(meta === true) setMeta((prev) => !prev);
+    if(index === 0) setPrep((prev) => !prev);
   }
   function launchTweet(text, meta){
-    if(!prep){
-      alert("Tweets not prepared");
-      return;
-    }
-    //will replace with twitter fetch request later
     console.log(text);
-    apiRef.current.innerText = "Debug Success!";
-    //checks if request or meta
-    if(text.substring(0,7) === "REQUEST"){
-      setReqs((prev) => {
-        return reqs.map((req) => {
-          if(req.id === index){
-            const update = {
-              ...req,
-              status: !req.status,
-            };
-            return update;
-          }
-          return req;
-        });
+    if(!meta){
+      const updated = reqs.map((item) => {
+        if(item.id === index){
+          const updatedItem = {
+            ...item,
+            status: !item.status,
+          };
+          return updatedItem;
+        }
+        return item;
       });
+      setReqs(updated);
       index++;
       prepRequest();
       return;
     }
-    text = '';
-    displayRef.current.innerText = "No tweets loaded";
-    setPrep((prev) => !prev);
+    else {
+      setPrep((prev) => !prev);
+      displayRef.current.innerText = "No Tweets Loaded";
+    }
   }
   return (
     <div className='TweetMenu'>
       <h2>Tweet Station</h2>
       <div className='PrepButtons'>
-        <button onClick={() => prepMeta(sBlock[1])}>Prepare Intro</button>
-        <button onClick={() => prepMeta(sBlock[2])}>Prepare Callout</button>
-        <button onClick={() => prepMeta(sBlock[3])}>Prepare Cutoff</button>
-        <button onClick={() => {index = 0; prepRequest();}}>Prepare Requests</button>
+        {!pushed[0] && (<button onClick={() => prepMeta(1)}>Prepare Intro</button>)}
+        {!pushed[1] && (<button onClick={() => prepMeta(2)}>Prepare Callout</button>)}
+        {!pushed[2] && (<button onClick={() => prepMeta(3)}>Prepare Cutoff</button>)}
+        {!pushed[3] && (<button onClick={() => {index = 0; prepRequest();}}>Prepare Requests</button>)}
       </div>
       <div className='Displays'>
         <div className='TweetDisplay'>
           <span ref={displayRef}>No Tweets Loaded</span>
         </div>
         <div className='APIDisplay'>
-          <span ref={apiRef}>API Ready</span>
+          <span ref={apiRef}>Prep = {prep ? ("True") : ("False")}</span>
         </div>
       </div>
       {prep && (<button onClick={() => launchTweet(msg, meta)}>Launch Tweet</button>)}
