@@ -12,7 +12,6 @@ let rBlock = [];
 let sBlock = [];
 let msg = "";
 let index = 0;
-let pushed = [false, false, false, false];
 
 const downloadFile = ({data, fileName, fileType}) => {
   const blob = new Blob([data], {type: fileType});
@@ -47,6 +46,10 @@ function TweetMenu({reqs, setReqs}){
   const [table, setTable] = React.useState(false);
   const [prep, setPrep] = React.useState(false);
   const [meta, setMeta] = React.useState(true);
+  const [introP, setIntroP] = React.useState(false);
+  const [calloutP, setCalloutP] = React.useState(false);
+  const [cutoffP, setCutoffP] = React.useState(false);
+  const [reqP, setReqP] = React.useState(false);
   const displayRef = React.useRef();
   const apiRef = React.useRef();
   const handleEdit = () => {setEdit((prev) => !prev);};
@@ -115,8 +118,20 @@ function TweetMenu({reqs, setReqs}){
     if(meta === false) setMeta((prev) => !prev);
     msg = metaTweetBuilder(sBlock[sInd], sBlock[0]);
     displayRef.current.innerText = msg;
+    switch(sInd){
+      case 1:
+        setIntroP((prev) => !prev);
+        break;
+      case 2:
+        setCalloutP((prev) => !prev);
+        break;
+      case 3:
+        setCutoffP((prev) => !prev);
+        break;
+      default:
+        break;
+    }
     setPrep((prev) => !prev);
-    pushed[sInd-1] = false;
   }
   function prepRequest(){
     if(sBlock.length === 0){
@@ -130,17 +145,35 @@ function TweetMenu({reqs, setReqs}){
     if(index >= rBlock.length){
       displayRef.current.innerText = "All requests tweeted out!";
       index = 0;
-      pushed[3] = false;
       setPrep((prev) => !prev);
       return;
     }
     if(meta === true) setMeta((prev) => !prev);
     msg = reqTweetBuilder(rBlock[index], index+1, sBlock[0]);
     displayRef.current.innerText = msg;
-    if(index === 0) setPrep((prev) => !prev);
+    if(index === 0){
+      setPrep((prev) => !prev);
+      setReqP((prev) => !prev);
+    }
   }
   function launchTweet(text, meta){
-    console.log(text);
+    const message = {text: text};
+    fetch("/tweetout", {
+      method: 'post',
+      mode: 'cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(message)
+    }).then((res) => res.status)
+    .then((status) => {
+      switch(status){
+        case 200:
+          apiRef.current.innerHTML = "Tweet Launched Successfully";
+          break;
+        default:
+          apiRef.current.innerHTML = "Tweet Failed To Launch";
+          break;
+      }
+    });
     if(!meta){
       const updated = reqs.map((item) => {
         if(item.id === index){
@@ -166,10 +199,10 @@ function TweetMenu({reqs, setReqs}){
     <div className='TweetMenu'>
       <h2>Tweet Station</h2>
       <div className='PrepButtons'>
-        {!pushed[0] && (<button onClick={() => prepMeta(1)}>Prepare Intro</button>)}
-        {!pushed[1] && (<button onClick={() => prepMeta(2)}>Prepare Callout</button>)}
-        {!pushed[2] && (<button onClick={() => prepMeta(3)}>Prepare Cutoff</button>)}
-        {!pushed[3] && (<button onClick={() => {index = 0; prepRequest();}}>Prepare Requests</button>)}
+        {!introP && (<button onClick={() => prepMeta(1)}>Prepare Intro</button>)}
+        {!calloutP && (<button onClick={() => prepMeta(2)}>Prepare Callout</button>)}
+        {!cutoffP && (<button onClick={() => prepMeta(3)}>Prepare Cutoff</button>)}
+        {!reqP && (<button onClick={() => {index = 0; prepRequest();}}>Prepare Requests</button>)}
       </div>
       <div className='Displays'>
         <div className='TweetDisplay'>
