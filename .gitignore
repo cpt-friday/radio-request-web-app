@@ -24,4 +24,4 @@ yarn-debug.log*
 yarn-error.log*
 
 #keep tokens out of it
-server/config.js
+config.js
